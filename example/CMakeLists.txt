@@ -24,6 +24,9 @@
 cmake_minimum_required(VERSION 3.0)
 project(SpdlogExamples)
 
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
+
 if(TARGET spdlog)
   # Part of the main project
   add_library(spdlog::spdlog ALIAS spdlog)
@@ -32,18 +35,16 @@ else()
   find_package(spdlog CONFIG REQUIRED)
 endif()
 
-if (CMAKE_COMPILER_IS_GNUCXX)
-  set ( CMAKE_CXX_FLAGS "--std=c++11 -pthread")  
-  set ( CMAKE_EXE_LIKKER_FLAGS "-pthread")  
-endif ()
+find_package(Threads REQUIRED)
 
 add_executable(example example.cpp)
-target_link_libraries(example spdlog::spdlog)
+target_link_libraries(example spdlog::spdlog Threads::Threads)
 
 add_executable(benchmark bench.cpp)
-target_link_libraries(benchmark spdlog::spdlog)
+target_link_libraries(benchmark spdlog::spdlog Threads::Threads)
 
 enable_testing()
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/logs")
 add_test(NAME RunExample COMMAND example)
 add_test(NAME RunBenchmark COMMAND benchmark)
+
