@@ -65,9 +65,10 @@ public:
          buffer_mask_(buffer_size - 1)
     {
         //queue size must be power of two
-        if(!((buffer_size >= 2) && ((buffer_size & (buffer_size - 1)) == 0)))
-            throw spdlog_ex("async logger queue size must be power of two");
-
+        const bool is_power_of_two = ((buffer_size >= 2) && ((buffer_size & (buffer_size - 1)) == 0));
+        if (!is_power_of_two) {
+            buffer_size = static_cast<size_t>(std::pow(2, std::ceil(std::log2(buffer_size))));
+        }
         for (size_t i = 0; i != buffer_size; i += 1)
             buffer_[i].sequence_.store(i, std::memory_order_relaxed);
         enqueue_pos_.store(0, std::memory_order_relaxed);
