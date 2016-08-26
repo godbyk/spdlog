@@ -15,18 +15,17 @@
 #include <mutex>
 #include <string>
 
-namespace spdlog
-{
-namespace sinks
-{
+namespace spdlog {
+namespace sinks {
+
 /*
-* Android sink (logging using __android_log_write)
-*/
+ * Android sink (logging using __android_log_write)
+ */
 template<class Mutex>
-class base_android_sink : public base_sink < Mutex >
+class base_android_sink : public base_sink<Mutex>
 {
 public:
-    explicit base_android_sink(std::string tag="spdlog"): _tag(tag)
+    explicit base_android_sink(const std::string& tag = "spdlog"): _tag(tag)
     {
     }
 
@@ -38,18 +37,7 @@ protected:
     void _sink_it(const details::log_msg& msg) override
     {
         const android_LogPriority priority = convert_to_android(msg.level);
-        const int expected_size = msg.formatted.size();
-        const int size = __android_log_write(
-                             priority, _tag.c_str(), msg.formatted.c_str()
-                         );
-        if (size > expected_size)
-        {
-            // Will write a little bit more than original message
-        }
-        else
-        {
-            throw spdlog_ex("Send to Android logcat failed");
-        }
+        __android_log_write(priority, _tag.c_str(), msg.formatted.c_str());
     }
 
 private:
@@ -63,20 +51,14 @@ private:
             return ANDROID_LOG_DEBUG;
         case spdlog::level::info:
             return ANDROID_LOG_INFO;
-        case spdlog::level::notice:
-            return ANDROID_LOG_INFO;
         case spdlog::level::warn:
             return ANDROID_LOG_WARN;
         case spdlog::level::err:
             return ANDROID_LOG_ERROR;
         case spdlog::level::critical:
             return ANDROID_LOG_FATAL;
-        case spdlog::level::alert:
-            return ANDROID_LOG_FATAL;
-        case spdlog::level::emerg:
-            return ANDROID_LOG_FATAL;
         default:
-            throw spdlog_ex("Incorrect level value");
+            return ANDROID_LOG_INFO;
         }
     }
 
@@ -86,7 +68,7 @@ private:
 typedef base_android_sink<std::mutex> android_sink_mt;
 typedef base_android_sink<details::null_mutex> android_sink_st;
 
-}
-}
+} // namespace sinks
+} // namespace spdlog
 
 #endif
